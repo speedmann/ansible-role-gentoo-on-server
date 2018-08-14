@@ -1,0 +1,12 @@
+---
+- name: Create filesystem for boot
+  filesystem:
+    fstype: ext4
+    dev: /dev/md/boot
+    opts: -L boot
+
+- name: Create filesystem for root
+  filesystem:
+    fstype: ext4
+    dev: /dev/mapper/{{ inventory_hostname_short }}-root
+    opts: -L root

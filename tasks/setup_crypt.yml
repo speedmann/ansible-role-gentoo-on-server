@@ -1,0 +1,32 @@
+---
+- name: Check if device is already a LUKS device
+  command: cryptsetup isLuks /dev/md/crypt
+  register: is_luks
+  changed_when: False
+  failed_when: is_luks.rc > 1
+
+- name: Check if LUKS device is already active
+  command: cryptsetup status decrypted
+  register: luks_is_active
+  changed_when: False
+  failed_when: luks_is_active.rc not in [0, 4]
+
+- name: Copy encryption key (sic)
+  copy:
+    src: "{{ crypt_key }}"
+    dest: /dev/shm/{{ inventory_hostname_short }}.key
+    mode: 0600
+  when: is_luks.rc == 1 or luks_is_active.rc == 4
+
+- name: Format device with LUKS
+  command: cryptsetup luksFormat -c aes-xts-plain64 -s 512 -h sha512 -y /dev/md/crypt --key-file /dev/shm/{{ inventory_hostname_short }}.key
+  when: is_luks.rc == 1
+
+- name: Open LUKS device
+  command: cryptsetup open --type luks /dev/md/crypt decrypted --key-file /dev/shm/{{ inventory_hostname_short }}.key
+  when: luks_is_active.rc == 4
+
+- name: Remove encryption key
+  file:
+    dest: /dev/shm/{{ inventory_hostname_short }}.key
+    state: absent

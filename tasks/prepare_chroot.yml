@@ -1,0 +1,29 @@
+---
+- name: Copy DNS info
+  copy:
+    src: /etc/resolv.conf
+    dest: /mnt/gentoo/etc/
+    remote_src: yes
+
+- name: Mount proc bind
+  mount:
+    path: /mnt/gentoo/proc
+    fstype: proc
+    src: /proc
+    state: mounted
+
+- name: Mount dev bind
+  mount:
+    path: /mnt/gentoo/dev
+    fstype: none
+    src: /dev
+    opts: rbind
+    state: mounted
+
+- name: Mount sys bind
+  mount:
+    path: /mnt/gentoo/sys
+    fstype: none
+    src: /sys
+    opts: rbind
+    state: mounted

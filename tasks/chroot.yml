@@ -1,0 +1,64 @@
+---
+- name: emerge-webrsync
+  command: chroot /mnt/gentoo bash -c 'source /etc/profile; /usr/bin/emerge-webrsync'
+  # alphabetically the last category folder
+  args:
+    creates: /mnt/gentoo/usr/portage/xfce-extra
+  become: yes
+
+- name: Set timezone
+  copy:
+    dest: /mnt/gentoo/etc/timezone
+    content: |
+      {{ timezone }}
+  register: timezone
+  become: yes
+
+- name: Set timezone
+  command: chroot /mnt/gentoo bash -c 'source /etc/profile; emerge --config sys-libs/timezone-data'
+  become: yes
+  when: timezone is changed
+
+- name: Configure locales
+  lineinfile:
+    path: /mnt/gentoo/etc/locale.gen
+    line: en_US.UTF-8 UTF-8
+  register: locales
+  become: yes
+
+- name: Generate locales
+  command: chroot /mnt/gentoo bash -c 'source /etc/profile; locale-gen'
+  become: yes
+  when: locales is changed
+
+- name: Set hostname
+  copy:
+    content: |
+      hostname="{{ inventory_hostname }}"
+    dest: /mnt/gentoo/etc/conf.d/hostname
+  become: yes
+
+- name: Set use flag for grub
+  copy:
+    content: |
+      sys-boot/grub device-mapper
+    dest: /mnt/gentoo/etc/portage/package.use/grub
+  become: yes
+
+- name: Install system packages
+  command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; emerge {{ item.name }}'
+  args:
+    creates: "{{ item.creates }}"
+  become: yes
+  with_items:
+  - name: syslog-ng
+    creates: /mnt/gentoo/usr/sbin/syslog-ng
+  - name: grub
+    creates: /mnt/gentoo/usr/sbin/grub-install
+  - name: mdadm
+    creates: /mnt/gentoo/sbin/mdadm
+  - name: cryptsetup
+    creates: /mnt/gentoo/sbin/cryptsetup
+
+- name: Add syslog-ng to Default Run Configuration
+  command: chroot /mnt/gentoo bash -c 'rc-update add syslog-ng default'

@@ -1,0 +1,14 @@
+---
+- include: setup_partitions.yml
+- include: setup_raid.yml
+- include: setup_crypt.yml
+- include: setup_lvm.yml
+- include: setup_filesystems.yml
+- include: prepare_stage3.yml
+- include: prepare_chroot.yml
+- include: chroot.yml
+- include: kernel.yml
+- include: initramfs.yml
+- include: grub.yml
+- include: network.yml
+- include: reboot.yml

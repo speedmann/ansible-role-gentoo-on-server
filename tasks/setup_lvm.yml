@@ -1,0 +1,11 @@
+---
+- name: Create volume group
+  lvg:
+    vg: "{{ inventory_hostname_short }}"
+    pvs: /dev/mapper/decrypted
+
+- name: Create root volume
+  lvol:
+    vg: "{{ inventory_hostname_short }}"
+    lv: root
+    size: 32G

@@ -1,0 +1,57 @@
+---
+- name: Mount root filesystem
+  mount:
+    path: /mnt/gentoo
+    src: /dev/mapper/{{ inventory_hostname_short }}-root
+    fstype: ext4
+    state: mounted
+
+- name: Get Download page
+  uri:
+    url: https://www.gentoo.org/downloads
+    return_content: yes
+  register: downloads
+  check_mode: no
+
+# to fetch all download urls
+# {{ downloads.content | regex_findall('(?:http://[^\"]*stage3-amd64(?:-[^\"]*)?-[0-9]{8}\\.tar\\.bz2)') }}
+# now it is only .xz and the name has added the timestamp also
+# "{{ downloads.content | regex_findall('(?:http://[^\"]*stage3-amd64(?:-[^\"]*)?-[0-9]{8}(?:T[0-9]{6}Z)?\\.tar\\.(?:bz2|xz))') }}"
+- name: Install stage3
+  block:
+  - name: Download stage3
+    get_url:
+      url: "{{ download_url }}"
+      dest: /mnt/gentoo/{{ basename_file }}
+  - name: Unpack stage3
+    unarchive:
+      src: /mnt/gentoo/{{ basename_file }}
+      dest: /mnt/gentoo
+      remote_src: yes
+      extra_opts:
+      - -p
+      - --xattrs
+      - --numeric-owner
+      creates: /mnt/gentoo/dev
+  vars:
+    download_url_old: "{{ (downloads.content | regex_findall('(?:http://[^\"]*stage3-amd64-[0-9]{8}\\.tar\\.bz2)'))[0] }}"
+    download_url: "{{ (downloads.content | regex_findall('(?:http://[^\"]*stage3-amd64(?:-[^\"]*)?-[0-9]{8}(?:T[0-9]{6}Z)?\\.tar\\.(?:bz2|xz))'))[0] }}"
+    basename_file: "{{ download_url | basename }}"
+
+- name: Modify make.conf
+  lineinfile:
+    path: /mnt/gentoo/etc/portage/make.conf
+    regexp: '^{{ item.name }}='
+    line: '{{ item.name }}="{{ item.value }}"'
+  with_items:
+  - name: CFLAGS
+    value: -march=native -O2 -pipe
+  - name: MAKEOPTS
+    value: -j{{ ansible_processor_vcpus+1 }}
+
+- name: Mount boot filesystem
+  mount:
+    path: /mnt/gentoo/boot
+    src: /dev/md/boot
+    fstype: ext4
+    state: mounted
