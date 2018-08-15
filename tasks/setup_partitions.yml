@@ -2,10 +2,13 @@
 - name: Select only SATA disks
   set_fact:
     sata_disks: "[{% for device in ansible_devices %}
-      {% if ansible_devices[device].vendor == 'ATA' %}
+      {% if ansible_devices[device].vendor in  ['ATA','QEMU'] and ansible_devices[device].removable == '0' %}
         '{{ device }}',
       {% endif %}
     {% endfor %}]"
+- name: Set partition flags
+  set_fact:
+    partition_flags: "{% if configure_raid == True %}['raid']{% else %}['lvm']{% endif %}"
 - name: Create new disc label and BIOS boot partition
   parted:
     device: "/dev/{{ item }}"
@@ -28,8 +31,7 @@
     number: 2
     part_type: primary
     state: present
-    flags:
-    - raid
+    flags: "{{ partition_flags }}"
     part_start: 10240s
     part_end: 1058815s
     unit: s
@@ -42,8 +44,7 @@
     number: 3
     part_type: primary
     state: present
-    flags:
-    - raid
+    flags: "{{ partition_flags }}"
     part_start: 1058816s
     unit: s
   with_items: "{{ sata_disks }}"

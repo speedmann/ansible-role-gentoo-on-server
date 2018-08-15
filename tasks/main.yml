@@ -1,6 +1,7 @@
 ---
 - include: setup_partitions.yml
 - include: setup_raid.yml
+  when: configure_raid == True
 - include: setup_crypt.yml
 - include: setup_lvm.yml
 - include: setup_filesystems.yml

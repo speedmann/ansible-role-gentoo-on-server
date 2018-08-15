@@ -1,3 +1,5 @@
 ---
 timezone: Europe/Berlin
 crypt_key: "{{ lookup('env', 'HOME') }}/{{ inventory_hostname_short }}.key"
+configure_raid: True
+gateway_not_in_subnet: False

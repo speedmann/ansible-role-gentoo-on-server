@@ -1,4 +1,7 @@
 ---
+- name: Get devicename for boot
+  set_fact:
+    boot_device: "{% if configure_raid == True %}/dev/md/boot{% else %}/dev/sda2{% endif %}"
 - name: Mount root filesystem
   mount:
     path: /mnt/gentoo
@@ -51,7 +54,7 @@
 
 - name: Mount boot filesystem
   mount:
+    src: "{{ boot_device }}"
     path: /mnt/gentoo/boot
-    src: /dev/md/boot
     fstype: ext4
     state: mounted

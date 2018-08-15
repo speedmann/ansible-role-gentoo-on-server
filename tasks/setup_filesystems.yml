@@ -1,8 +1,15 @@
 ---
+# This could possibly avoided when reusing from setup_crypt.yml
+# But then the name would be wrong, and you could not run this tasks
+# on their own
+- name: Get devicename for boot
+  set_fact:
+    boot_device: "{% if configure_raid == True %}/dev/md/boot{% else %}/dev/sda2{% endif %}"
+
 - name: Create filesystem for boot
   filesystem:
     fstype: ext4
-    dev: /dev/md/boot
+    dev: "{{ boot_device }}"
     opts: -L boot
 
 - name: Create filesystem for root

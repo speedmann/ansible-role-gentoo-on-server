@@ -6,7 +6,7 @@
     creates: /mnt/gentoo/usr/portage/xfce-extra
   become: yes
 
-- name: Set timezone
+- name: Copy timezone config
   copy:
     dest: /mnt/gentoo/etc/timezone
     content: |
