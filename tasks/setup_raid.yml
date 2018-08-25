@@ -5,13 +5,13 @@
   changed_when: False
 
 - name: Create raid 1 for boot
-  command: mdadm --create /dev/md/boot --name={{ inventory_hostname_short }}:boot --metadata=1.2 --level=raid1 --raid-devices=2 /dev/sda2 /dev/sdb2
+  command: mdadm --create /dev/md/boot --run --name={{ inventory_hostname_short }}:boot --metadata=1.2 --level=raid1 --raid-devices=2 /dev/sda2 /dev/sdb2
   when:
   - raid_stat.stdout.find('sda2') == -1
   - raid_stat.stdout.find('sdb2') == -1
 
 - name: Create raid 1 for crypt
-  command: mdadm --create /dev/md/crypt --name={{ inventory_hostname_short }}:crypt --metadata=1.2 --level=raid1 --raid-devices=2 /dev/sda3 /dev/sdb3
+  command: mdadm --create /dev/md/crypt --run --name={{ inventory_hostname_short }}:crypt --metadata=1.2 --level=raid1 --raid-devices=2 /dev/sda3 /dev/sdb3
   when:
   - raid_stat.stdout.find('sda3') == -1
   - raid_stat.stdout.find('sdb3') == -1
