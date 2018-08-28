@@ -4,7 +4,6 @@
   # alphabetically the last category folder
   args:
     creates: /mnt/gentoo/usr/portage/xfce-extra
-  become: yes
 
 - name: Copy timezone config
   copy:
@@ -12,11 +11,9 @@
     content: |
       {{ timezone }}
   register: timezone
-  become: yes
 
 - name: Set timezone
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; emerge --config sys-libs/timezone-data'
-  become: yes
   when: timezone is changed
 
 - name: Configure locales
@@ -24,11 +21,9 @@
     path: /mnt/gentoo/etc/locale.gen
     line: en_US.UTF-8 UTF-8
   register: locales
-  become: yes
 
 - name: Generate locales
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; locale-gen'
-  become: yes
   when: locales is changed
 
 - name: Set hostname
@@ -36,20 +31,17 @@
     content: |
       hostname="{{ inventory_hostname }}"
     dest: /mnt/gentoo/etc/conf.d/hostname
-  become: yes
 
 - name: Set use flag for grub
   copy:
     content: |
       sys-boot/grub device-mapper
     dest: /mnt/gentoo/etc/portage/package.use/grub
-  become: yes
 
 - name: Install system packages
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; emerge {{ item.name }}'
   args:
     creates: "{{ item.creates }}"
-  become: yes
   with_items:
   - name: syslog-ng
     creates: /mnt/gentoo/usr/sbin/syslog-ng

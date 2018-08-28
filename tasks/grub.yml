@@ -14,11 +14,10 @@
   register: luks_uuid
   changed_when: False
   check_mode: no
-  become: yes
 
 - name: Assemble grub config line
   set_fact:
-    grub_cli_param: rd.neednet=1 rd.luks.uuid={{ luks_uuid.stdout }} rd.lvm.vg={{ inventory_hostname_short }} ip={{ ansible_default_ipv4.address }}/{{ (ansible_default_ipv4.address+"/"+ansible_default_ipv4.netmask)|ipaddr('prefix') }}::{{ ansible_default_ipv4.gateway }}:{{ ansible_default_ipv4.netmask }}:{{ inventory_hostname }}:{{ ansible_default_ipv4.interface }}:off{% if gateway_not_in_subnet == True %} rd.route={{ ansible_default_ipv4.gateway }}/32:{{ ansible_default_ipv4.gateway }}:{{ ansible_default_ipv4.interface }} {% else %}{% endif %}
+    grub_cli_param: rd.neednet=1 rd.luks.uuid={{ luks_uuid.stdout }} rd.lvm.vg={{ inventory_hostname_short }} ip={{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ ansible_default_ipv4.netmask }}:{{ inventory_hostname }}:{{ ansible_default_ipv4.interface }}:off{% if gateway_not_in_subnet == True %} rd.route={{ ansible_default_ipv4.gateway }}/32::{{ ansible_default_ipv4.interface }} {% else %}{% endif %}
 
 - name: Configure grub
   lineinfile:
@@ -30,8 +29,6 @@
     regexp: ^GRUB_ENABLE_CRYPTODISK=
   - line: GRUB_CMDLINE_LINUX="{{ grub_cli_param }}"
     regexp: ^GRUB_CMDLINE_LINUX=
-  become: yes
 
 - name: Make grub config
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; grub-mkconfig -o /boot/grub/grub.cfg'
-  become: yes

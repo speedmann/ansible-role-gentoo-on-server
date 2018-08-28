@@ -2,7 +2,6 @@
 - name: Get predictable network interface name
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; udevadm test-builtin net_id /sys/class/net/{{ ansible_default_ipv4.interface }}'
   register: network_interface
-  become: yes
   check_mode: no
   changed_when: false
 
@@ -14,7 +13,7 @@
 
 - name: Set network routes fact
   set_fact:
-    routes_{{ network_intf }}: "default via {{ ansible_default_ipv4.gateway }} {% if gateway_not_in_subnet == True %}
+    routes: "default via {{ ansible_default_ipv4.gateway }} {% if gateway_not_in_subnet == True %}
 {{ ansible_default_ipv4.gateway }}/32 dev {{ network_intf }}{% else %}{% endif %}"
 
 - name: Create interface service
@@ -35,5 +34,5 @@
   copy:
     content: |
       config_{{ network_intf }}="noop {{ ansible_default_ipv4.address }}/{{ (ansible_default_ipv4.address+"/"+ansible_default_ipv4.netmask)|ipaddr('prefix') }}"
-      routes_{{ network_intf }}={{ routes_{{ network_intf }} }}
+      routes_{{ network_intf }}={{ routes }}
     dest: /mnt/gentoo/etc/conf.d/net

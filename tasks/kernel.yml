@@ -3,7 +3,6 @@
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; emerge gentoo-sources'
   args:
     creates: /mnt/gentoo/usr/src/linux/arch
-  become: yes
 
 - name: eselect profile list
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; eselect profile list'
@@ -19,20 +18,21 @@
     src: config-4.9.34-gentoo
     dest: /mnt/gentoo/usr/src/linux/.config
     force: no
-  become: yes
 
 - name: Run make oldconfig
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; cd /usr/src/linux; make oldconfig'
-  become: yes
+
+- name: Copy Kernel config
+  template:
+    src: config
+    dest: /mnt/gentoo/usr/src/linux/.config
+  when: ansible_system_vendor == "QEMU"
 
 - name: Make Kernel
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; cd /usr/src/linux; make -j{{ ansible_processor_vcpus+1 }}'
-  become: yes
 
 - name: Make Module Install
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; cd /usr/src/linux; make modules_install'
-  become: yes
 
 - name: Make Install
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; cd /usr/src/linux; make install'
-  become: yes

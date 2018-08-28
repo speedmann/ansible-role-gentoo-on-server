@@ -10,13 +10,11 @@
     content: |
       =sys-kernel/dracut-crypt-ssh-1.0.6-r1 ~amd64
     dest: /mnt/gentoo/etc/portage/package.accept_keywords/dracut
-  become: yes
 
 - name: Install dracut-crypt-ssh
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; emerge sys-kernel/dracut-crypt-ssh'
   args:
     creates: /mnt/gentoo/usr/lib64/dracut/modules.d/60crypt-ssh
-  become: yes
 
 - name: Check if openssh has bindist USE-flag
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; emerge --info net-misc/openssh'
@@ -27,7 +25,6 @@
 - name: Recompile openssh
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; emerge net-misc/openssh'
   when: not "-bindist" in ssh_bindist.stdout
-  become: yes
   # Rebuild net-misc/openssh will also rebuild dev-libs/openssl
   # they are built with bindist use flag
   # dracut-dropbear wants to generate ecdsa keys
@@ -55,8 +52,6 @@
     state: present
     key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
     path: /mnt/gentoo/root/.ssh/authorized_keys
-  become: yes
 
 - name: Create initramfs for {{ linked_kernel_version }}
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; dracut --force --host-only --kver {{ linked_kernel_version }}'
-  become: yes
