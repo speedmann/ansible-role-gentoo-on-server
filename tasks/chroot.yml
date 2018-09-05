@@ -59,6 +59,8 @@
     creates: /mnt/gentoo/sbin/mdadm
   - name: cryptsetup
     creates: /mnt/gentoo/sbin/cryptsetup
+  - name: gentoolkit
+    creates: /mnt/gentoo/usr/bin/equery
 
 - name: Add syslog-ng to Default Run Configuration
   command: chroot /mnt/gentoo bash -c 'rc-update add syslog-ng default'
