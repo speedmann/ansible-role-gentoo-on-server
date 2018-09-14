@@ -57,6 +57,21 @@
     path: /mnt/gentoo/root/.ssh/authorized_keys
   become: yes
 
+- name: Copy ssh host keys
+  copy:
+    src: "{{ item.src }}"
+    dest: /mnt/gentoo{{ item.dest }}
+    mode: "{{ item.mode | default('0600') }}"
+  with_items: "{{ keys_to_copy }}"
+  become: yes
+
+- name: Configure dracut
+  lineinfile:
+    line: '{{ item.key }}="{{ item.value }}"'
+    regexp: '^{{ item.key }}'
+    path: /mnt/gentoo/etc/dracut.conf.d/crypt-ssh.conf
+  with_dict: "{{ dracut_crypt_ssh_conf }}"
+
 - name: Create initramfs for {{ linked_kernel_version }}
   command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; dracut --force --host-only --kver {{ linked_kernel_version }}'
   become: yes
