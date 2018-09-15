@@ -9,8 +9,7 @@
 - name: Set name of network interface
   # predictable name for future use
   set_fact:
-    network_intf_predictable: "{% for i in network_interface.stdout_lines %}{% if i.startswith('ID_NET_NAME_PATH') %}{{ i.split('=')[1] }}{% endif %}{% endfor %}"
-    network_intf: "{{ ansible_default_ipv4.interface }}"
+    network_intf: "{% if use_dhcp %}{{ ansible_default_ipv4.interface }}{% else %}{% for i in network_interface.stdout_lines %}{% if i.startswith('ID_NET_NAME_PATH') %}{{ i.split('=')[1] }}{% endif %}{% endfor %}{% endif %}"
 
 - name: Create interface service
   file:

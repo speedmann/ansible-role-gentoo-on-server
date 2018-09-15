@@ -5,3 +5,4 @@ keys_to_copy: []
 dracut_crypt_ssh_conf:
   dropbear_rsa_key: GENERATE
   dropbear_ecdsa_key: GENERATE
+use_dhcp: false

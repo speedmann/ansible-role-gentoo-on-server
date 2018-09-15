@@ -21,6 +21,24 @@
     force: no
   become: yes
 
+- name: Modify kernel config
+  lineinfile:
+    path: /mnt/gentoo/usr/src/linux/.config
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    insertafter: "{{ item.insertafter | default('EOF') }}"
+    state: "{{ item.state | default('present') }}"
+  with_items:
+  - regexp: CONFIG_IP_PNP[^_]
+    line: "{% if use_dhcp %}CONFIG_IP_PNP=y{% else %}# CONFIG_IP_PNP is not set{% endif %}"
+  - regexp: CONFIG_IP_PNP_DHCP
+    line: CONFIG_IP_PNP_DHCP=y
+    insertafter: CONFIG_IP_PNP=y
+    state: "{% if use_dhcp %}present{% else %}absent{% endif %}"
+  # BOOTP and RARP not needed I think
+  # CONFIG_IP_PNP_BOOTP=y
+  # CONFIG_IP_PNP_RARP=y
+
 - name: Run make oldconfig
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; cd /usr/src/linux; make oldconfig'
   become: yes

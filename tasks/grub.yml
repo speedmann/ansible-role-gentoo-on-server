@@ -14,6 +14,13 @@
   check_mode: no
   become: yes
 
+- name: Assemble grub cmdline
+  set_fact:
+    grub_cmdline: >
+      rd.neednet=1 rd.luks.uuid={{ luks_uuid.stdout }}
+      rd.lvm.vg={{ inventory_hostname_short }} rd.debug
+      ip={% if use_dhcp %}dhcp{% else %}{{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ ansible_default_ipv4.netmask }}:{{ inventory_hostname_short }}:{{ network_intf }}:off{% endif %}
+
 - name: Configure grub
   lineinfile:
     path: /mnt/gentoo/etc/default/grub
@@ -22,7 +29,7 @@
   with_items:
   - line: GRUB_ENABLE_CRYPTODISK=Y
     regexp: ^GRUB_ENABLE_CRYPTODISK=
-  - line: GRUB_CMDLINE_LINUX="rd.neednet=1 ip=dhcp rd.luks.uuid={{ luks_uuid.stdout }} rd.lvm.vg={{ inventory_hostname_short }}"
+  - line: GRUB_CMDLINE_LINUX="{{ grub_cmdline }}"
     regexp: ^GRUB_CMDLINE_LINUX=
   become: yes
 

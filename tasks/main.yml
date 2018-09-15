@@ -9,6 +9,6 @@
 - include: chroot.yml
 - include: kernel.yml
 - include: initramfs.yml
-- include: grub.yml
 - include: network.yml
+- include: grub.yml
 - include: reboot.yml
