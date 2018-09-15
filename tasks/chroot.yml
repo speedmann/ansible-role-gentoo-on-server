@@ -34,7 +34,7 @@
 - name: Set hostname
   copy:
     content: |
-      hostname="{{ inventory_hostname }}"
+      hostname="{{ inventory_hostname_short }}"
     dest: /mnt/gentoo/etc/conf.d/hostname
   become: yes
 

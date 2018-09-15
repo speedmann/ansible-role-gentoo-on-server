@@ -18,7 +18,7 @@
   set_fact:
     grub_cmdline: >
       rd.neednet=1 rd.luks.uuid={{ luks_uuid.stdout }}
-      rd.lvm.vg={{ inventory_hostname_short }} rd.debug
+      rd.lvm.vg={{ inventory_hostname_short }}
       ip={% if use_dhcp %}dhcp{% else %}{{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ ansible_default_ipv4.netmask }}:{{ inventory_hostname_short }}:{{ network_intf }}:off{% endif %}
 
 - name: Configure grub
@@ -29,7 +29,7 @@
   with_items:
   - line: GRUB_ENABLE_CRYPTODISK=Y
     regexp: ^GRUB_ENABLE_CRYPTODISK=
-  - line: GRUB_CMDLINE_LINUX="{{ grub_cmdline }}"
+  - line: GRUB_CMDLINE_LINUX="{{ grub_cmdline | trim }}"
     regexp: ^GRUB_CMDLINE_LINUX=
   become: yes
 

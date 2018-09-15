@@ -11,9 +11,6 @@
   changed_when: False
   check_mode: no
 
-- debug:
-    var: profile_list
-
 - name: Copy kernel config
   copy:
     src: config-4.9.34-gentoo
