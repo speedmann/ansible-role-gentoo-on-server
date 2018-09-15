@@ -1,6 +1,8 @@
 ---
 - name: Remount /dev to get /dev/mapper visible
   command: mount --rbind /dev /mnt/gentoo/dev
+  args:
+    warn: False
 
 - name: Install grub to boot drive
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; grub-install /dev/sda'
