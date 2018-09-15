@@ -9,3 +9,10 @@
     vg: "{{ inventory_hostname_short }}"
     lv: root
     size: 32G
+
+- name: Create additional logical volumes
+  lvol:
+    vg: "{{ inventory_hostname_short }}"
+    lv: "{{ item.name }}"
+    size: "{{ item.size }}"
+  with_items: "{{ logical_volumes }}"

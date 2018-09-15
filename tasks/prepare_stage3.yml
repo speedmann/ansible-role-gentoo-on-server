@@ -52,6 +52,31 @@
 - name: Mount boot filesystem
   mount:
     path: /mnt/gentoo/boot
-    src: /dev/md/boot
+    src: LABEL=boot
     fstype: ext4
     state: mounted
+
+- name: Configure boot mount point (chroot fstab)
+  mount:
+    path: /boot
+    src: LABEL=boot
+    fstype: ext4
+    state: present
+    fstab: /mnt/gentoo/etc/fstab
+
+- name: Mount additional logical volumes
+  mount:
+    path: /mnt/gentoo{{ item.target }}
+    src: LABEL={{ item.name }}
+    fstype: ext4
+    state: mounted
+  with_items: "{{ logical_volumes }}"
+
+- name: Configure mount points for additional logical volumes
+  mount:
+    path: "{{ item.target }}"
+    src: LABEL={{ item.name }}
+    fstype: ext4
+    state: present
+    fstab: /mnt/gentoo/etc/fstab
+  with_items: "{{ logical_volumes }}"

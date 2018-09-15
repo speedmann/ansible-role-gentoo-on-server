@@ -10,3 +10,10 @@
     fstype: ext4
     dev: /dev/mapper/{{ inventory_hostname_short }}-root
     opts: -L root
+
+- name: Create filesystem for additional logical volumes
+  filesystem:
+    fstype: ext4
+    dev: /dev/mapper/{{ inventory_hostname_short }}-{{ item.name }}
+    opts: -L {{ item.name }} -m 0
+  with_items: "{{ logical_volumes }}"
