@@ -34,7 +34,6 @@
       - --numeric-owner
       creates: /mnt/gentoo/dev
   vars:
-    download_url_old: "{{ (downloads.content | regex_findall('(?:http://[^\"]*stage3-amd64-[0-9]{8}\\.tar\\.bz2)'))[0] }}"
     download_url: "{{ (downloads.content | regex_findall('(?:http://[^\"]*stage3-amd64(?:-[^\"]*)?-[0-9]{8}(?:T[0-9]{6}Z)?\\.tar\\.(?:bz2|xz))'))[0] }}"
     basename_file: "{{ download_url | basename }}"
 
