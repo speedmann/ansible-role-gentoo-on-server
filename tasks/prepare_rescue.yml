@@ -1,0 +1,10 @@
+---
+- name: Install packages needed in rescue system
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - cryptsetup-bin
+  - dmsetup
+  - lvm2
+  - xz-utils

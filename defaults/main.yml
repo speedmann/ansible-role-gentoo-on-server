@@ -7,3 +7,4 @@ dracut_crypt_ssh_conf:
   dropbear_ecdsa_key: GENERATE
 use_dhcp: false
 logical_volumes: []
+provider: hetzner

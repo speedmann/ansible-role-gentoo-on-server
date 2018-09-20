@@ -1,4 +1,6 @@
 ---
+- include: prepare_rescue.yml
+  when: provider == 'server4you'
 - include: setup_partitions.yml
 - include: setup_raid.yml
 - include: setup_crypt.yml
@@ -12,3 +14,4 @@
 - include: network.yml
 - include: grub.yml
 - include: reboot.yml
+  when: provider == 'hetzner'

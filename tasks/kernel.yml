@@ -29,6 +29,10 @@
   # BOOTP and RARP not needed I think
   # CONFIG_IP_PNP_BOOTP=y
   # CONFIG_IP_PNP_RARP=y
+  - regexp: CONFIG_NET_VENDOR_BROADCOM
+    line: CONFIG_NET_VENDOR_BROADCOM=y
+  - regexp: CONFIG_TIGON3[^_]
+    line: CONFIG_TIGON3=y
 
 - name: Run make oldconfig
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; cd /usr/src/linux; make oldconfig'
