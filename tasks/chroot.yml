@@ -14,7 +14,7 @@
   register: timezone
   become: yes
 
-- name: Set timezone
+- name: Configure timezone
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; emerge --config sys-libs/timezone-data'
   become: yes
   when: timezone is changed
