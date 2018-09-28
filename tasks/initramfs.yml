@@ -5,6 +5,11 @@
 #  args:
 #    creates: /mnt/gentoo/usr/bin/dracut
 
+- name: Ensure package.accept_keywords directory exist
+  file:
+    state: directory
+    path: /mnt/gentoo/etc/portage/package.accept_keywords
+
 - name: Create accept_keywords for dracut-crypt-ssh
   copy:
     content: |
