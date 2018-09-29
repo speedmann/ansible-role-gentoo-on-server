@@ -5,7 +5,7 @@
     warn: False
 
 - name: Get luks uuid
-  command: cryptsetup luksUUID /dev/md/crypt
+  command: cryptsetup luksUUID /dev/disk/by-id/md-name-{{ inventory_hostname_short }}:crypt
   register: luks_uuid
   changed_when: False
   check_mode: no

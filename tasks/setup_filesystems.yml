@@ -2,7 +2,7 @@
 - name: Create filesystem for boot
   filesystem:
     fstype: ext4
-    dev: /dev/md/boot
+    dev: /dev/disk/by-id/md-name-{{ inventory_hostname_short }}:boot
     opts: -L boot
 
 - name: Create filesystem for root

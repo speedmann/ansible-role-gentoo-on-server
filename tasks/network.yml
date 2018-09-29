@@ -1,6 +1,6 @@
 ---
 - name: Get predictable network interface name
-  command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; udevadm test-builtin net_id /sys/class/net/{{ ansible_default_ipv4.interface }}'
+  command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; udevadm test-builtin net_id /sys/class/net/{{ ansible_default_ipv4.interface }} | grep -E "ID_NET_NAME_(ONBOARD|SLOT|PATH)"'
   register: network_interface
   become: yes
   check_mode: no
@@ -9,7 +9,7 @@
 - name: Set name of network interface
   # predictable name for future use
   set_fact:
-    network_intf: "{% if use_dhcp %}{{ ansible_default_ipv4.interface }}{% else %}{% for i in network_interface.stdout_lines %}{% if i.startswith('ID_NET_NAME_PATH') %}{{ i.split('=')[1] }}{% endif %}{% endfor %}{% endif %}"
+    network_intf: "{% if use_dhcp %}{{ ansible_default_ipv4.interface }}{% else %}{{ network_interface.stdout_lines.0.split('=')[1] }}{% endif %}"
 
 - name: Create interface service
   file:
