@@ -33,6 +33,18 @@
     line: CONFIG_NET_VENDOR_BROADCOM=y
   - regexp: CONFIG_TIGON3[^_]
     line: CONFIG_TIGON3=y
+  - regexp: CONFIG_IGB_HWMON[^_]
+    line: CONFIG_IGB_HWMON=y
+  - regexp: CONFIG_IGB[^_V]
+    line: CONFIG_IGB=y
+  - regexp: CONFIG_RTC_I2C_AND_SPI[^_]
+    line: CONFIG_RTC_I2C_AND_SPI=y
+  - regexp: CONFIG_REGMAP_I2C[^_]
+    line: CONFIG_REGMAP_I2C=y
+  - regexp: CONFIG_I2C_ALGOBIT[^_]
+    line: CONFIG_I2C_ALGOBIT=y
+  - regexp: CONFIG_NET_VENDOR_INTEL[^_]
+    line: CONFIG_NET_VENDOR_INTEL=y
 
 - name: Run make oldconfig
   command: chroot /mnt/gentoo bash -c 'source /etc/profile; cd /usr/src/linux; make oldconfig'
