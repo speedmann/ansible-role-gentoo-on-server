@@ -5,53 +5,72 @@
   changed_when: False
   check_mode: no
 
-- name: Copy kernel config
-  copy:
-    src: config-4.9.34-gentoo
-    dest: /mnt/gentoo/usr/src/linux/.config
-    force: no
-  become: yes
+- name: Manually config kernel
+  block:
+  - name: Copy kernel config
+    copy:
+      src: config-4.9.34-gentoo
+      dest: /mnt/gentoo/usr/src/linux/.config
+      force: no
+    become: yes
+  
+  - name: Modify kernel config
+    lineinfile:
+      path: /mnt/gentoo/usr/src/linux/.config
+      line: "{{ item.line }}"
+      regexp: "{{ item.regexp }}"
+      insertafter: "{{ item.insertafter | default('EOF') }}"
+      state: "{{ item.state | default('present') }}"
+    with_items:
+    - regexp: CONFIG_IP_PNP[^_]
+      line: "{% if use_dhcp %}CONFIG_IP_PNP=y{% else %}# CONFIG_IP_PNP is not set{% endif %}"
+    - regexp: CONFIG_IP_PNP_DHCP
+      line: CONFIG_IP_PNP_DHCP=y
+      insertafter: CONFIG_IP_PNP=y
+      state: "{% if use_dhcp %}present{% else %}absent{% endif %}"
+    # BOOTP and RARP not needed I think
+    # CONFIG_IP_PNP_BOOTP=y
+    # CONFIG_IP_PNP_RARP=y
+    - regexp: CONFIG_NET_VENDOR_BROADCOM
+      line: CONFIG_NET_VENDOR_BROADCOM=y
+    - regexp: CONFIG_TIGON3[^_]
+      line: CONFIG_TIGON3=y
+    - regexp: CONFIG_IGB_HWMON[^_]
+      line: CONFIG_IGB_HWMON=y
+    - regexp: CONFIG_IGB[^_V]
+      line: CONFIG_IGB=y
+    - regexp: CONFIG_RTC_I2C_AND_SPI[^_]
+      line: CONFIG_RTC_I2C_AND_SPI=y
+    - regexp: CONFIG_REGMAP_I2C[^_]
+      line: CONFIG_REGMAP_I2C=y
+    - regexp: CONFIG_I2C_ALGOBIT[^_]
+      line: CONFIG_I2C_ALGOBIT=y
+    - regexp: CONFIG_NET_VENDOR_INTEL[^_]
+      line: CONFIG_NET_VENDOR_INTEL=y
+  
+  - name: Run make oldconfig
+    command: chroot /mnt/gentoo bash -c 'source /etc/profile; cd /usr/src/linux; make oldconfig'
+    become: yes
+  when: not kernel_autoconfig
 
-- name: Modify kernel config
-  lineinfile:
-    path: /mnt/gentoo/usr/src/linux/.config
-    line: "{{ item.line }}"
-    regexp: "{{ item.regexp }}"
-    insertafter: "{{ item.insertafter | default('EOF') }}"
-    state: "{{ item.state | default('present') }}"
-  with_items:
-  - regexp: CONFIG_IP_PNP[^_]
-    line: "{% if use_dhcp %}CONFIG_IP_PNP=y{% else %}# CONFIG_IP_PNP is not set{% endif %}"
-  - regexp: CONFIG_IP_PNP_DHCP
-    line: CONFIG_IP_PNP_DHCP=y
-    insertafter: CONFIG_IP_PNP=y
-    state: "{% if use_dhcp %}present{% else %}absent{% endif %}"
-  # BOOTP and RARP not needed I think
-  # CONFIG_IP_PNP_BOOTP=y
-  # CONFIG_IP_PNP_RARP=y
-  - regexp: CONFIG_NET_VENDOR_BROADCOM
-    line: CONFIG_NET_VENDOR_BROADCOM=y
-  - regexp: CONFIG_TIGON3[^_]
-    line: CONFIG_TIGON3=y
-  - regexp: CONFIG_IGB_HWMON[^_]
-    line: CONFIG_IGB_HWMON=y
-  - regexp: CONFIG_IGB[^_V]
-    line: CONFIG_IGB=y
-  - regexp: CONFIG_RTC_I2C_AND_SPI[^_]
-    line: CONFIG_RTC_I2C_AND_SPI=y
-  - regexp: CONFIG_REGMAP_I2C[^_]
-    line: CONFIG_REGMAP_I2C=y
-  - regexp: CONFIG_I2C_ALGOBIT[^_]
-    line: CONFIG_I2C_ALGOBIT=y
-  - regexp: CONFIG_NET_VENDOR_INTEL[^_]
-    line: CONFIG_NET_VENDOR_INTEL=y
+# chmod +x ./scripts/kconfig/streamline_config.pl && ./scripts/kconfig/streamline_config.pl > strip_config && cp strip_config .config && make localmodconfig && make olddefconfig && make localyesconfig
 
-- name: Run make oldconfig
-  command: chroot /mnt/gentoo bash -c 'source /etc/profile; cd /usr/src/linux; make oldconfig'
-  become: yes
-
+- name: Autoconfig kernel
+  block:
+  - name: Generate running config
+    command: chroot /mnt/gentoo bash -c 'source /etc/profile && cd /usr/src/linux && chmod +x ./scripts/kconfig/streamline_config.pl && ./scripts/kconfig/streamline_config.pl > strip_config && cp strip_config .config'
+  - name: Run make localmodconfig
+    command: chroot /mnt/gentoo bash -c 'source /etc/profile && cd /usr/src/linux && make localmodconfig'
+  - name: Run make olddefconfig
+    command: chroot /mnt/gentoo bash -c 'source /etc/profile && cd /usr/src/linux && make olddefconfig'
+  - name: Run make localyesconfig
+    command: chroot /mnt/gentoo bash -c 'source /etc/profile && cd /usr/src/linux && make localyesconfig || true'
+  - name: Run make localyesconfig
+    command: chroot /mnt/gentoo /bin/bash -c 'source /etc/profile && cd /usr/src/linux && yes "" | make oldconfig'
+  when: kernel_autoconfig
+  
 - name: Make Kernel
-  command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; cd /usr/src/linux; make -j{{ ansible_processor_vcpus+1 }}'
+  command: chroot /mnt/gentoo/ bash -c 'source /etc/profile; cd /usr/src/linux; yes "" | make -j{{ ansible_processor_vcpus+1 }}'
   become: yes
 
 - name: Make Module Install
